@@ -1,0 +1,124 @@
+<div class="task-list">
+  <div class="task-header">
+    <div class="task-header-content">
+      <div class="header-title">
+        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <h1>Task Management</h1>
+      </div>
+      <p class="task-subtitle">Organize, track, and complete your tasks efficiently</p>
+      <div class="task-stats">
+        <div class="stat-item">
+          <span class="stat-value">{{ totalTasks }}</span>
+          <span class="stat-label">Total Tasks</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ completedTasks }}</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ pendingTasks }}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+      </div>
+    </div>
+    <button class="add-task-btn" routerLink="/tasks/new">
+      <div class="btn-content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>Create New Task</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="task-controls">
+    <div class="task-filters">
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" [(ngModel)]="statusFilter" (change)="filterTasks()">
+          <option value="all">All Tasks</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="priorityFilter">Priority</label>
+        <select id="priorityFilter" [(ngModel)]="priorityFilter" (change)="filterTasks()">
+          <option value="all">All Priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="task-search">
+      <input 
+        type="text" 
+        placeholder="Search tasks..." 
+        [(ngModel)]="searchQuery" 
+        (input)="filterTasks()"
+      >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+  </div>
+
+  @if (filteredTasks.length === 0) {
+    <div class="no-tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      <h3>No tasks found</h3>
+      <p>Try adjusting your filters or create a new task</p>
+    </div>
+  } @else {
+    <div class="task-grid">
+      @for (task of filteredTasks; track task.id) {
+        <div class="task-card" [class]="task.priority">
+          <div class="task-card-header">
+            <div class="task-status" [class]="task.status">
+              <button class="status-change-btn" (click)="updateTaskStatus(task)" [title]="'Change status from ' + task.status">
+                <span class="status-dot"></span>
+                {{ task.status | titlecase }}
+                <svg class="status-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+            </div>
+            <div class="task-actions">
+              <button class="action-btn edit-btn" (click)="editTask(task)" title="Edit Task">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button class="action-btn delete-btn" (click)="deleteTask(task.id)" title="Delete Task">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <h3 class="task-title">{{ task.title }}</h3>
+          <p class="task-description">{{ task.description }}</p>
+          
+          <div class="task-meta">
+            <div class="task-due-date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span>{{ task.dueDate | date }}</span>
+            </div>
+            <div class="task-priority" [class]="task.priority">
+              {{ task.priority | titlecase }}
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div> 

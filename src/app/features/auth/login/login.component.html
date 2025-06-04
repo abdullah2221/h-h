@@ -1,0 +1,47 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Welcome Back</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill" class="full-width-input">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="Enter your email">
+          <mat-error *ngIf="submitted && f['email'].errors?.['required']">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['email'].errors?.['email']">
+            Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width-input">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" placeholder="Enter your password">
+          <mat-error *ngIf="submitted && f['password'].errors?.['required']">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['password'].errors?.['minlength']">
+            Password must be at least {{f['password'].errors?.['minlength']?.requiredLength}} characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="rememberMe">Remember me</mat-checkbox>
+
+        <p>
+          <a routerLink="/forgot-password">Forgot Password?</a>
+        </p>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+          Sign In
+        </button>
+
+        <p class="text-center mt-4">
+          Don't have an account? <a routerLink="/register">Sign Up</a>
+        </p>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div> 
