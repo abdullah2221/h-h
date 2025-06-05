@@ -31,8 +31,13 @@ export class TaskService {
     return this.tasks$;
   }
 
+  getTask(id: string): Observable<Task | undefined> {
+    return this.tasks$.pipe(
+      map(tasks => tasks.find(task => task.id === id))
+    );
+  }
+
   addTask(task: Omit<Task, 'id' | 'createdAt'>): Observable<Task> {
-    const tasks = this.tasksSubject.value;
     const newTask: Task = {
       ...task,
       id: crypto.randomUUID(),
@@ -40,40 +45,35 @@ export class TaskService {
     };
     
     return of(newTask).pipe(
-      tap(() => this.saveTasks([...tasks, newTask]))
+      tap(() => {
+        const tasks = this.tasksSubject.value;
+        this.saveTasks([...tasks, newTask]);
+      })
     );
   }
 
   updateTask(id: string, updates: Partial<Task>): Observable<Task> {
     const tasks = this.tasksSubject.value;
-    const updatedTask = tasks.find(task => task.id === id);
+    const currentTask = tasks.find(task => task.id === id);
     
-    if (!updatedTask) {
+    if (!currentTask) {
       throw new Error(`Task with id ${id} not found`);
     }
 
-    const finalTask = { ...updatedTask, ...updates };
+    const updatedTask = { ...currentTask, ...updates };
     
-    return of(finalTask).pipe(
+    return of(updatedTask).pipe(
       tap(() => {
-        const updatedTasks = tasks.map(task => 
-          task.id === id ? finalTask : task
-        );
+        const updatedTasks = tasks.map(t => t.id === id ? updatedTask : t);
         this.saveTasks(updatedTasks);
       })
     );
   }
 
   deleteTask(id: string): Observable<void> {
-    const tasks = this.tasksSubject.value;
-    const taskExists = tasks.some(task => task.id === id);
-    
-    if (!taskExists) {
-      throw new Error(`Task with id ${id} not found`);
-    }
-
     return of(void 0).pipe(
       tap(() => {
+        const tasks = this.tasksSubject.value;
         this.saveTasks(tasks.filter(task => task.id !== id));
       })
     );
@@ -100,4 +100,54 @@ export class TaskService {
       }))
     );
   }
-} 
+
+  getCurrentTasks(): Task[] {
+    return this.tasksSubject.value;
+  }
+
+  importTasks(tasks: Task[]): void {
+    this.saveTasks(tasks);
+  }
+
+  // Helper method to add some sample tasks if the storage is empty
+  initializeSampleTasks(): void {
+    if (this.tasksSubject.value.length === 0) {
+      const sampleTasks: Task[] = [
+        {
+          id: crypto.randomUUID(),
+          title: 'Complete Project Setup',
+          description: 'Set up the initial project structure and dependencies',
+          status: 'completed',
+          priority: 'high',
+          dueDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+          createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+          tags: ['setup', 'initialization'],
+          dependsOn: []
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Implement Task Management',
+          description: 'Create the core task management functionality',
+          status: 'in-progress',
+          priority: 'high',
+          dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+          createdAt: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+          tags: ['feature', 'core'],
+          dependsOn: []
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Design User Interface',
+          description: 'Create wireframes and implement the UI components',
+          status: 'pending',
+          priority: 'medium',
+          dueDate: new Date(Date.now() + 172800000).toISOString(), // 2 days from now
+          createdAt: new Date().toISOString(),
+          tags: ['design', 'ui'],
+          dependsOn: []
+        }
+      ];
+      this.saveTasks(sampleTasks);
+    }
+  }
+}

@@ -1,0 +1,50 @@
+<div class="kanban-board">
+  <div class="kanban-header">
+    <h1>Kanban Board</h1>
+    <p class="subtitle">Drag and drop tasks to manage their status</p>
+  </div>
+
+  <div class="kanban-container" cdkDropListGroup>
+    @for (column of columns; track column.id) {
+      <div class="kanban-column" [id]="column.id">
+        <div class="column-header">
+          <h2>{{ column.title }}</h2>
+          <span class="task-count">{{ column.tasks.length }}</span>
+        </div>
+        
+        <div 
+          class="task-list"
+          cdkDropList
+          [cdkDropListData]="column.tasks"
+          [cdkDropListConnectedTo]="getConnectedColumns()"
+          (cdkDropListDropped)="drop($event)"
+        >
+          @for (task of column.tasks; track task.id) {
+            <div class="task-card" cdkDrag [class]="task.priority">
+              <div class="task-card-header">
+                <div class="task-priority" [class]="task.priority">
+                  {{ task.priority | titlecase }}
+                </div>
+                <div class="task-due-date">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  {{ task.dueDate | date }}
+                </div>
+              </div>
+              
+              <h3 class="task-title">{{ task.title }}</h3>
+              <p class="task-description">{{ task.description }}</p>
+              
+              <div class="task-tags" *ngIf="task.tags?.length">
+                @for (tag of task.tags; track tag) {
+                  <span class="task-tag">{{ tag }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div> 

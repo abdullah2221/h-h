@@ -9,11 +9,11 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
-        canActivate: [authGuard]
+        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
         path: 'dashboard',
@@ -30,16 +30,20 @@ export const routes: Routes = [
       {
         path: 'tasks/:id/edit',
         component: TaskFormComponent
+      },
+      {
+        path: 'kanban',
+        loadComponent: () => import('./features/kanban/kanban.component').then(m => m.KanbanComponent)
+      },
+      {
+        path: 'analytics',
+        loadComponent: () => import('./features/analytics/analytics.component').then(m => m.AnalyticsComponent)
       }
     ]
   },
   {
-    path: 'login',
-    loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
   },
   {
     path: '**',

@@ -1,5 +1,33 @@
 @use 'sass:color';
 
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Variables
+$primary-color: #3b82f6;
+$primary-hover: #2563eb;
+$secondary-color: #6b7280;
+$error-color: #ef4444;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$border-color: #e5e7eb;
+$background-color: #f9fafb;
+$card-background: #ffffff;
+$text-primary: #111827;
+$text-secondary: #4b5563;
+
 .task-form-container {
   min-height: 100vh;
   padding: 2rem 1rem;
@@ -7,66 +35,63 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  animation: fadeIn 0.3s ease-out;
 
   @media (min-width: 768px) {
     padding: 3rem 2rem;
     align-items: center;
   }
-}
 
-.task-form {
-  width: 100%;
-  max-width: 800px;
-  background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  .form-card {
+    background: $card-background;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    overflow: hidden;
+    animation: slideIn 0.4s ease-out;
+    width: 100%;
+    max-width: 800px;
   }
-}
 
-.form-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  .form-header {
+    padding: 2rem;
+    background: linear-gradient(to right, $primary-color, darken($primary-color, 10%));
+    color: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 
-  .header-content {
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1e293b;
-      margin: 0;
-      line-height: 1.2;
+    .header-content {
+      h1 {
+        font-size: 1.875rem;
+        font-weight: 600;
+        margin: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+      }
     }
 
-    .subtitle {
-      font-size: 0.875rem;
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 0.5rem;
       color: #64748b;
-      margin: 0.25rem 0 0;
-    }
-  }
+      transition: all 0.2s ease-in-out;
 
-  .btn-icon {
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    color: #64748b;
-    transition: all 0.2s ease-in-out;
+      &:hover {
+        background-color: #f1f5f9;
+        color: #1e293b;
+      }
 
-    &:hover {
-      background-color: #f1f5f9;
-      color: #1e293b;
-    }
-
-    svg {
-      width: 1.5rem;
-      height: 1.5rem;
+      svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
     }
   }
 }
@@ -167,14 +192,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1.5rem;
 
   label {
+    display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    color: $text-primary;
+    margin-bottom: 0.5rem;
 
     .required-indicator {
       color: #ef4444;
@@ -185,45 +210,52 @@
 
   &.has-error {
     label {
-      color: #ef4444;
+      color: $error-color;
     }
   }
 }
 
 .input-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    left: 1rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: $secondary-color;
+    pointer-events: none;
+  }
 
   input,
   textarea,
   select {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 1px solid $border-color;
     border-radius: 0.5rem;
-    background-color: white;
-    color: #1e293b;
     font-size: 0.875rem;
-    transition: all 0.2s ease-in-out;
+    color: $text-primary;
+    background-color: $background-color;
+    transition: all 0.2s ease;
 
     &::placeholder {
       color: #64748b;
     }
 
-    &:hover {
-      border-color: #cbd5e1;
-    }
-
     &:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
     }
 
     &.error {
-      border-color: #ef4444;
-
+      border-color: $error-color;
+      
       &:focus {
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        box-shadow: 0 0 0 3px rgba($error-color, 0.1);
       }
     }
   }
@@ -235,32 +267,11 @@
 
   select {
     appearance: none;
-    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.25rem;
     padding-right: 2.5rem;
-
-    option {
-      padding: 0.5rem;
-    }
-  }
-
-  .input-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #64748b;
-    pointer-events: none;
-    transition: all 0.2s ease-in-out;
-
-    svg {
-      width: 1rem;
-      height: 1rem;
-    }
-
-    &.textarea-icon {
-      top: 1rem;
-      transform: none;
-    }
   }
 
   .field-hint {
@@ -275,12 +286,10 @@
 }
 
 .error-message {
+  display: block;
   font-size: 0.75rem;
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
+  color: $error-color;
+  margin-top: 0.5rem;
 
   svg {
     width: 0.875rem;
@@ -298,87 +307,58 @@
 }
 
 .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid $border-color;
 
-  .action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  border: none;
-  min-width: 8rem;
-
-  .btn-content {
-    display: flex;
+  .btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
 
-    svg {
-      width: 1rem;
-      height: 1rem;
-    }
-  }
+    &.btn-primary {
+      background-color: $primary-color;
+      color: white;
+      border: none;
 
-  &.btn-primary {
-    background-color: #3b82f6;
-    color: white;
+      &:hover:not(:disabled) {
+        background-color: $primary-hover;
+      }
 
-    &:hover:not(:disabled) {
-      background-color: #2563eb;
-    }
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
 
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    &.btn-disabled {
-      background-color: #64748b;
-    }
-  }
-
-  &.btn-secondary {
-    background-color: transparent;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
-
-    &:hover:not(:disabled) {
-      background-color: #f1f5f9;
-      border-color: #cbd5e1;
+      .spinner {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.5rem;
+        border: 2px solid rgba(white, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
     }
 
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
+    &.btn-secondary {
+      background-color: $background-color;
+      color: $text-primary;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background-color: darken($background-color, 5%);
+      }
     }
-  }
-
-  .spinner {
-    animation: spin 1s linear infinite;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -388,11 +368,11 @@
   }
 
   .form-header {
-    padding: 1rem;
+    padding: 1.5rem;
 
     .header-content {
       h1 {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
       }
     }
   }
@@ -406,16 +386,10 @@
   }
 
   .form-actions {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
+    flex-direction: column-reverse;
 
-    .action-buttons {
-      flex-direction: column-reverse;
-      gap: 0.75rem;
-
-      .btn {
-        width: 100%;
-      }
+    .btn {
+      width: 100%;
     }
   }
 }
@@ -465,5 +439,51 @@
   .error-message.form-error {
     background-color: rgba(239, 68, 68, 0.15);
     border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .task-form-container {
+    .form-card {
+      background: #1f2937;
+    }
+
+    .form-header {
+      background: linear-gradient(to right, darken($primary-color, 10%), darken($primary-color, 20%));
+    }
+  }
+
+  .task-form {
+    .form-group {
+      label {
+        color: #e5e7eb;
+      }
+
+      .input-wrapper {
+        input, textarea, select {
+          background-color: #374151;
+          border-color: #4b5563;
+          color: #e5e7eb;
+
+          &:focus {
+            border-color: $primary-color;
+          }
+        }
+      }
+    }
+  }
+
+  .form-actions {
+    border-top-color: #4b5563;
+
+    .btn-secondary {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #e5e7eb;
+
+      &:hover {
+        background-color: #4b5563;
+      }
+    }
   }
 } 

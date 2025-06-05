@@ -1,0 +1,103 @@
+<div class="kanban-container">
+  <div class="kanban-column pending-column">
+    <div class="column-header">
+      <h2>Pending</h2>
+      <span class="task-count">{{ pendingTasks.length }}</span>
+    </div>
+    
+    <div class="tasks-container">
+      <div *ngFor="let task of pendingTasks" class="task-card" [class.priority-high]="task.priority === 'high'" 
+           [class.priority-medium]="task.priority === 'medium'" [class.priority-low]="task.priority === 'low'">
+        <div class="task-header">
+          <h3 class="task-title">{{ task.title }}</h3>
+          <span class="task-priority">{{ task.priority }}</span>
+        </div>
+        <p class="task-description">{{ task.description }}</p>
+        <div class="task-footer">
+          <span class="task-due-date">Due: {{ task.dueDate | date:'mediumDate' }}</span>
+          <div class="task-actions">
+            <button class="action-button move-button" (click)="updateTaskStatus(task, 'in-progress')">
+              Move to In Progress
+            </button>
+          </div>
+        </div>
+        <div *ngIf="task.tags.length > 0" class="task-tags">
+          <span *ngFor="let tag of task.tags" class="task-tag">{{ tag }}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="pendingTasks.length === 0" class="empty-state">
+        <p>No pending tasks</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="kanban-column in-progress-column">
+    <div class="column-header">
+      <h2>In Progress</h2>
+      <span class="task-count">{{ inProgressTasks.length }}</span>
+    </div>
+    
+    <div class="tasks-container">
+      <div *ngFor="let task of inProgressTasks" class="task-card" [class.priority-high]="task.priority === 'high'" 
+           [class.priority-medium]="task.priority === 'medium'" [class.priority-low]="task.priority === 'low'">
+        <div class="task-header">
+          <h3 class="task-title">{{ task.title }}</h3>
+          <span class="task-priority">{{ task.priority }}</span>
+        </div>
+        <p class="task-description">{{ task.description }}</p>
+        <div class="task-footer">
+          <span class="task-due-date">Due: {{ task.dueDate | date:'mediumDate' }}</span>
+          <div class="task-actions">
+            <button class="action-button move-button" (click)="updateTaskStatus(task, 'pending')">
+              Move to Pending
+            </button>
+            <button class="action-button move-button" (click)="updateTaskStatus(task, 'completed')">
+              Mark Complete
+            </button>
+          </div>
+        </div>
+        <div *ngIf="task.tags.length > 0" class="task-tags">
+          <span *ngFor="let tag of task.tags" class="task-tag">{{ tag }}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="inProgressTasks.length === 0" class="empty-state">
+        <p>No tasks in progress</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="kanban-column completed-column">
+    <div class="column-header">
+      <h2>Completed</h2>
+      <span class="task-count">{{ completedTasks.length }}</span>
+    </div>
+    
+    <div class="tasks-container">
+      <div *ngFor="let task of completedTasks" class="task-card completed" [class.priority-high]="task.priority === 'high'" 
+           [class.priority-medium]="task.priority === 'medium'" [class.priority-low]="task.priority === 'low'">
+        <div class="task-header">
+          <h3 class="task-title">{{ task.title }}</h3>
+          <span class="task-priority">{{ task.priority }}</span>
+        </div>
+        <p class="task-description">{{ task.description }}</p>
+        <div class="task-footer">
+          <span class="task-due-date">Due: {{ task.dueDate | date:'mediumDate' }}</span>
+          <div class="task-actions">
+            <button class="action-button move-button" (click)="updateTaskStatus(task, 'in-progress')">
+              Move to In Progress
+            </button>
+          </div>
+        </div>
+        <div *ngIf="task.tags.length > 0" class="task-tags">
+          <span *ngFor="let tag of task.tags" class="task-tag">{{ tag }}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="completedTasks.length === 0" class="empty-state">
+        <p>No completed tasks</p>
+      </div>
+    </div>
+  </div>
+</div>

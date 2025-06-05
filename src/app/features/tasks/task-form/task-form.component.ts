@@ -1,22 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TaskService } from '../../../core/services/task.service';
-import { Task } from '../../../core/models/task.model';
-
-type TaskPriority = 'low' | 'medium' | 'high';
-type TaskStatus = 'pending' | 'in-progress' | 'completed';
-
-interface TaskFormData {
-  title: string;
-  description: string;
-  priority: TaskPriority;
-  status: TaskStatus;
-  dueDate: string;
-}
+import { Task, TaskStatus, TaskPriority } from '../../../core/models/task.model';
 
 @Component({
   selector: 'app-task-form',
@@ -26,13 +15,16 @@ interface TaskFormData {
   styleUrls: ['./task-form.component.scss']
 })
 export class TaskFormComponent implements OnInit, OnDestroy {
-  taskForm!: FormGroup;
+  taskForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
   isEditMode = false;
   taskId: string | null = null;
   formSubmitted = false;
   today = new Date().toISOString().split('T')[0];
+  tags: string[] = [];
+  availableDependencies: Task[] = [];
+  selectedDependencies: Task[] = [];
   private destroy$ = new Subject<void>();
 
   // Form field validation states
@@ -41,7 +33,9 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     description: { touched: false, dirty: false, valid: false },
     priority: { touched: false, dirty: false, valid: false },
     status: { touched: false, dirty: false, valid: false },
-    dueDate: { touched: false, dirty: false, valid: false }
+    dueDate: { touched: false, dirty: false, valid: false },
+    tags: { touched: false, dirty: false, valid: false },
+    dependsOn: { touched: false, dirty: false, valid: false }
   };
 
   // Priority and status options
@@ -62,38 +56,44 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder
-  ) {}
+  ) {
+    this.taskForm = this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.maxLength(500)]],
+      status: ['pending' as TaskStatus, Validators.required],
+      priority: ['medium' as TaskPriority, Validators.required],
+      dueDate: ['', [Validators.required, this.futureDateValidator()]],
+      tags: [''],
+      dependsOn: [[]]
+    });
+  }
+
+  private futureDateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      
+      const date = new Date(control.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      return date < today ? { pastDate: true } : null;
+    };
+  }
 
   ngOnInit(): void {
-    this.initializeForm();
-    this.setupRouteSubscription();
+    const taskId = this.route.snapshot.paramMap.get('id');
+    if (taskId) {
+      this.isEditMode = true;
+      this.taskId = taskId;
+      this.loadTask(taskId);
+    }
+    this.loadDependencies();
     this.setupFormSubscriptions();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private initializeForm(): void {
-    this.taskForm = this.fb.group({
-      title: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(100)
-      ]],
-      description: ['', [
-        Validators.required,
-        Validators.minLength(10),
-        Validators.maxLength(500)
-      ]],
-      priority: ['', [Validators.required]],
-      status: ['', [Validators.required]],
-      dueDate: ['', [
-        Validators.required,
-        this.futureDateValidator()
-      ]]
-    });
   }
 
   private setupFormSubscriptions(): void {
@@ -106,7 +106,7 @@ export class TaskFormComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.updateFieldStates();
-        this.errorMessage = ''; // Clear error message on valid changes
+        this.errorMessage = '';
       });
 
     // Monitor individual field changes
@@ -120,18 +120,58 @@ export class TaskFormComponent implements OnInit, OnDestroy {
           });
       }
     });
-  }
 
-  private setupRouteSubscription(): void {
-    this.route.params
+    // Monitor tags input
+    this.taskForm.get('tags')?.valueChanges
       .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        if (params['id']) {
-          this.isEditMode = true;
-          this.taskId = params['id'];
-          this.loadTask();
+      .subscribe(value => {
+        if (value && typeof value === 'string' && value.endsWith(',')) {
+          const newTag = value.slice(0, -1).trim();
+          if (newTag && !this.tags.includes(newTag)) {
+            this.tags.push(newTag);
+            this.taskForm.patchValue({ tags: '' }, { emitEvent: false });
+          }
         }
       });
+  }
+
+  private loadTask(taskId: string): void {
+    this.taskService.getTask(taskId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (task) => {
+          this.taskForm.patchValue({
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            dueDate: task.dueDate.split('T')[0],
+            tags: '',
+            dependsOn: task.dependsOn || []
+          });
+          this.tags = task.tags || [];
+          this.updateSelectedDependencies(task.dependsOn || []);
+        },
+        error: () => {
+          this.router.navigate(['/tasks']);
+        }
+      });
+  }
+
+  private loadDependencies(): void {
+    this.taskService.getTasks()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tasks => {
+        this.availableDependencies = tasks.filter(task => 
+          !this.isEditMode || task.id !== this.taskId
+        );
+      });
+  }
+
+  private updateSelectedDependencies(dependencyIds: string[]): void {
+    this.selectedDependencies = this.availableDependencies.filter(task => 
+      dependencyIds.includes(task.id)
+    );
   }
 
   private updateFieldStates(): void {
@@ -151,45 +191,6 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     };
   }
 
-  private futureDateValidator(): Validators {
-    return (control: AbstractControl): { [key: string]: any } | null => {
-      if (!control.value) return null;
-      
-      const selectedDate = new Date(control.value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (selectedDate < today) {
-        return { pastDate: true };
-      }
-      return null;
-    };
-  }
-
-  private loadTask(): void {
-    if (!this.taskId) return;
-
-    this.taskService.getTasks()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (tasks) => {
-          const task = tasks.find(t => t.id === this.taskId);
-          if (task) {
-            this.taskForm.patchValue({
-              title: task.title,
-              description: task.description,
-              priority: task.priority,
-              status: task.status,
-              dueDate: task.dueDate.split('T')[0]
-            });
-          } else {
-            this.handleError('Task not found');
-          }
-        },
-        error: (error) => this.handleError('Failed to load task')
-      });
-  }
-
   async onSubmit(): Promise<void> {
     if (this.isSubmitting || this.taskForm.invalid) {
       this.markFormFieldsAsTouched();
@@ -201,22 +202,29 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     try {
-      const taskData: TaskFormData = this.taskForm.value;
+      const formValue = this.taskForm.value;
       
+      const taskData: Partial<Task> = {
+        title: formValue.title,
+        description: formValue.description,
+        status: formValue.status,
+        priority: formValue.priority,
+        dueDate: formValue.dueDate,
+        tags: this.tags,
+        dependsOn: this.selectedDependencies.map(dep => dep.id)
+      };
+
       if (this.isEditMode && this.taskId) {
-        await this.taskService.updateTask(this.taskId, taskData).toPromise();
+        await firstValueFrom(this.taskService.updateTask(this.taskId, taskData));
       } else {
-        await this.taskService.addTask(taskData as Omit<Task, 'id' | 'createdAt'>).toPromise();
+        await firstValueFrom(this.taskService.createTask(taskData as Task));
       }
 
-      this.showSuccessMessage();
-      await this.navigateToTaskList();
+      await this.router.navigate(['/tasks']);
     } catch (error) {
-      this.handleError(
-        this.isEditMode 
-          ? 'Failed to update task. Please try again.'
-          : 'Failed to create task. Please try again.'
-      );
+      this.errorMessage = this.isEditMode 
+        ? 'Failed to update task. Please try again.'
+        : 'Failed to create task. Please try again.';
     } finally {
       this.isSubmitting = false;
     }
@@ -230,23 +238,11 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private handleError(message: string): void {
-    this.errorMessage = message;
-    if (message === 'Task not found') {
-      setTimeout(() => this.navigateToTaskList(), 2000);
-    }
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.taskForm.get(fieldName);
+    return !!control && control.invalid && (control.touched || this.formSubmitted);
   }
 
-  private showSuccessMessage(): void {
-    // You could implement a toast notification here
-    console.log('Task saved successfully');
-  }
-
-  async navigateToTaskList(): Promise<void> {
-    await this.router.navigate(['/tasks']);
-  }
-
-  // Helper methods for template
   getFieldError(fieldName: string): string {
     const control = this.taskForm.get(fieldName);
     if (!control || !control.errors || !control.touched) return '';
@@ -259,15 +255,28 @@ export class TaskFormComponent implements OnInit, OnDestroy {
     return 'Invalid input';
   }
 
-  isFieldInvalid(fieldName: string): boolean {
-    const control = this.taskForm.get(fieldName);
-    return !!control && control.invalid && (control.touched || this.formSubmitted);
+  onCancel(): void {
+    this.router.navigate(['/tasks']);
   }
 
-  getSubmitButtonText(): string {
-    if (this.isSubmitting) {
-      return this.isEditMode ? 'Updating...' : 'Creating...';
-    }
-    return this.isEditMode ? 'Update Task' : 'Create Task';
+  removeTag(tag: string): void {
+    this.tags = this.tags.filter(t => t !== tag);
+  }
+
+  removeDependency(taskId: string): void {
+    const currentDeps = this.taskForm.get('dependsOn')?.value || [];
+    const updatedDeps = currentDeps.filter((id: string) => id !== taskId);
+    this.taskForm.patchValue({ dependsOn: updatedDeps });
+    this.selectedDependencies = this.selectedDependencies.filter(d => d.id !== taskId);
+  }
+
+  isDependencySelected(taskId: string): boolean {
+    return this.selectedDependencies.some(d => d.id === taskId);
+  }
+
+  onDependenciesChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const selectedIds = Array.from(select.selectedOptions).map(option => option.value);
+    this.updateSelectedDependencies(selectedIds);
   }
 } 

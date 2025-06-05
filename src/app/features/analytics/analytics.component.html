@@ -1,0 +1,93 @@
+<div class="analytics-container">
+  <h1>Task Analytics</h1>
+
+  <div class="stats-grid">
+    <!-- Task Status Overview -->
+    <div class="stat-card">
+      <h3>Task Status</h3>
+      <div class="stat-content">
+        <div class="stat-item">
+          <span class="stat-label">Total Tasks</span>
+          <span class="stat-value">{{ stats.total }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completed</span>
+          <span class="stat-value completed">{{ stats.completed }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">In Progress</span>
+          <span class="stat-value in-progress">{{ stats.inProgress }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value pending">{{ stats.pending }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority Distribution -->
+    <div class="stat-card">
+      <h3>Priority Distribution</h3>
+      <div class="stat-content">
+        <div class="stat-item">
+          <span class="stat-label">High Priority</span>
+          <span class="stat-value high">{{ stats.highPriority }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Medium Priority</span>
+          <span class="stat-value medium">{{ stats.mediumPriority }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Low Priority</span>
+          <span class="stat-value low">{{ stats.lowPriority }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Due Date Overview -->
+    <div class="stat-card">
+      <h3>Due Date Overview</h3>
+      <div class="stat-content">
+        <div class="stat-item">
+          <span class="stat-label">Overdue</span>
+          <span class="stat-value overdue">{{ stats.overdue }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Due Today</span>
+          <span class="stat-value due-today">{{ stats.dueToday }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Due This Week</span>
+          <span class="stat-value due-week">{{ stats.dueThisWeek }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion Rate -->
+    <div class="stat-card">
+      <h3>Completion Rate</h3>
+      <div class="stat-content">
+        <div class="completion-rate">
+          <div class="rate-circle" [style.--completion]="completionRate">
+            <span class="rate-value">{{ completionRate }}%</span>
+          </div>
+          <span class="rate-label">Tasks Completed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Tags Distribution -->
+  <div class="tags-distribution">
+    <h3>Task Tags Distribution</h3>
+    <div class="tags-list">
+      <div *ngFor="let tag of tagDistribution" class="tag-item">
+        <span class="tag-name">{{ tag.name }}</span>
+        <div class="tag-bar">
+          <div class="tag-fill" [style.width.%]="tag.percentage"></div>
+        </div>
+        <span class="tag-count">{{ tag.count }}</span>
+      </div>
+    </div>
+  </div>
+</div>

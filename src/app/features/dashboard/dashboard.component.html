@@ -1,129 +1,164 @@
-<div class="dashboard">
-  <div class="dashboard-header">
-    <div class="header-content">
-      <h1>Welcome to Your Dashboard</h1>
-      <p>Track your tasks and stay organized with real-time statistics</p>
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-section">
+    <div class="welcome-content">
+      <h1>Welcome Back!</h1>
+      <p class="subtitle">Here's an overview of your tasks and progress</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-primary" routerLink="/tasks/new">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <button class="btn btn-primary" (click)="navigateToCreateTask()">
+      <div class="btn-content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
         </svg>
-        New Task
-      </button>
-    </div>
+        <span>Create New Task</span>
+      </div>
+    </button>
   </div>
 
-  <div class="dashboard-stats">
-    <div class="stat-card total-tasks">
+  <!-- Quick Stats -->
+  <div class="quick-stats">
+    <div class="stat-card total-tasks" [@fadeInUp]>
       <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
         </svg>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <span class="stat-value">{{ stats.total }}</span>
         <span class="stat-label">Total Tasks</span>
       </div>
+      <div class="stat-trend" *ngIf="stats.total > 0">
+        <span class="trend-value">{{ (stats.completed / stats.total * 100).toFixed(1) }}%</span>
+        <span class="trend-label">Completion Rate</span>
+      </div>
     </div>
 
-    <div class="stat-card completed-tasks">
+    <div class="stat-card completed-tasks" [@fadeInUp] [style.animation-delay]="'0.1s'">
       <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <span class="stat-value">{{ stats.completed }}</span>
         <span class="stat-label">Completed</span>
       </div>
+      <div class="stat-trend" *ngIf="stats.completed > 0">
+        <span class="trend-value">+{{ stats.completed }}</span>
+        <span class="trend-label">This Week</span>
+      </div>
     </div>
 
-    <div class="stat-card pending-tasks">
+    <div class="stat-card pending-tasks" [@fadeInUp] [style.animation-delay]="'0.2s'">
       <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <span class="stat-value">{{ stats.pending }}</span>
         <span class="stat-label">Pending</span>
       </div>
+      <div class="stat-trend" *ngIf="stats.pending > 0">
+        <span class="trend-value">{{ stats.inProgress }}</span>
+        <span class="trend-label">In Progress</span>
+      </div>
     </div>
 
-    <div class="stat-card in-progress-tasks">
+    <div class="stat-card priority-tasks" [@fadeInUp] [style.animation-delay]="'0.3s'">
       <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
         </svg>
       </div>
-      <div class="stat-content">
-        <span class="stat-value">{{ stats.inProgress }}</span>
-        <span class="stat-label">In Progress</span>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.highPriority }}</span>
+        <span class="stat-label">High Priority</span>
+      </div>
+      <div class="stat-trend" *ngIf="stats.highPriority > 0">
+        <span class="trend-value">{{ (stats.highPriority / stats.total * 100).toFixed(1) }}%</span>
+        <span class="trend-label">Of Total</span>
       </div>
     </div>
   </div>
 
+  <!-- Task Overview -->
   <div class="dashboard-grid">
-    <div class="dashboard-card priority-overview">
+    <!-- Upcoming Tasks -->
+    <div class="dashboard-card upcoming-tasks" [@fadeInUp] [style.animation-delay]="'0.4s'">
       <div class="card-header">
-        <h3>Priority Overview</h3>
-        <div class="card-actions">
-          <button class="btn btn-icon" title="Refresh">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 4V9H9M20 20V15H15M19.0819 8.99999C18.7079 7.52323 17.8662 6.22099 16.6785 5.27099C15.4909 4.32099 14.0252 3.77399 12.4879 3.71399C10.9506 3.65399 9.44704 4.08399 8.16642 4.93399C6.8858 5.78399 5.89199 7.00799 5.31899 8.43399M4.95801 15C5.33199 16.4768 6.17369 17.779 7.36135 18.729C8.54902 19.679 10.0147 20.226 11.552 20.286C13.0893 20.346 14.5928 19.916 15.8734 19.066C17.1541 18.216 18.1479 16.992 18.7209 15.566" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
+        <h2>Upcoming Tasks</h2>
+        <a (click)="navigateToAllTasks()" class="view-all">View All</a>
       </div>
-      <div class="priority-stats">
-        <div class="priority-item high">
-          <div class="priority-info">
-            <span class="priority-dot"></span>
-            <span class="priority-label">High Priority</span>
+      <div class="card-content">
+        @if (stats.upcomingTasks.length > 0) {
+          <div class="task-list">
+            @for (task of stats.upcomingTasks; track task.id) {
+              <div class="task-item" (click)="navigateToTask(task.id)">
+                <div class="task-info">
+                  <h3 class="task-title">{{ task.title }}</h3>
+                  <p class="task-description">{{ task.description }}</p>
+                </div>
+                <div class="task-meta">
+                  <span class="due-date">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    {{ formatDate(task.dueDate) }}
+                  </span>
+                  <span class="task-priority" [style.background-color]="getPriorityColor(task.priority)">
+                    {{ task.priority }}
+                  </span>
+                </div>
+              </div>
+            }
           </div>
-          <span class="priority-value">{{ stats.highPriority }}</span>
-        </div>
-        <div class="priority-item medium">
-          <div class="priority-info">
-            <span class="priority-dot"></span>
-            <span class="priority-label">Medium Priority</span>
+        } @else {
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <p>No upcoming tasks</p>
+            <button class="btn btn-secondary" (click)="navigateToCreateTask()">Create Task</button>
           </div>
-          <span class="priority-value">{{ stats.mediumPriority || 0 }}</span>
-        </div>
-        <div class="priority-item low">
-          <div class="priority-info">
-            <span class="priority-dot"></span>
-            <span class="priority-label">Low Priority</span>
-          </div>
-          <span class="priority-value">{{ stats.lowPriority || 0 }}</span>
-        </div>
+        }
       </div>
     </div>
 
-    <div class="dashboard-card quick-actions">
+    <!-- Recent Activity -->
+    <div class="dashboard-card recent-activity" [@fadeInUp] [style.animation-delay]="'0.5s'">
       <div class="card-header">
-        <h3>Quick Actions</h3>
+        <h2>Recent Activity</h2>
+        <a (click)="navigateToAllTasks()" class="view-all">View All</a>
       </div>
-      <div class="action-buttons">
-        <button class="btn btn-secondary" routerLink="/tasks">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          View All Tasks
-        </button>
-        <button class="btn btn-secondary" routerLink="/tasks/new">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Create New Task
-        </button>
-        <button class="btn btn-secondary">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 17V17.01M12 17V17.01M15 17V17.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          View Calendar
-        </button>
+      <div class="card-content">
+        @if (stats.recentTasks.length > 0) {
+          <div class="activity-list">
+            @for (task of stats.recentTasks; track task.id) {
+              <div class="activity-item" (click)="navigateToTask(task.id)">
+                <div class="activity-icon" [class]="task.status">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path [attr.d]="getStatusIcon(task.status)"/>
+                  </svg>
+                </div>
+                <div class="activity-info">
+                  <h3 class="activity-title">{{ task.title }}</h3>
+                  <p class="activity-meta">
+                    <span class="activity-status">{{ task.status }}</span>
+                    <span class="activity-time">{{ formatDate(task.createdAt) }}</span>
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p>No recent activity</p>
+          </div>
+        }
       </div>
     </div>
   </div>
